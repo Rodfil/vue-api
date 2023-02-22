@@ -1,85 +1,157 @@
 <template>
-  <div>
-    <el-button type="success" @click="showModal = true" >Add Warehouse</el-button>
-      <el-table :data="tableData" style="width: 100%">
-        <el-table-column label="WarehouseName" width="180">
-        <template #default="scope">
-          <el-popover effect="light" trigger="hover" placement="top" width="auto">
-            <template #default>
-              <div>name: {{ scope.row.name }}</div>
-              <div>address: {{ scope.row.address }}</div>
-            </template>
-            <template #reference>
-              <el-tag>{{ scope.row.name }}</el-tag>
-            </template>
-          </el-popover>
+  <!-- Form -->
+    <el-button type="success"  @click="dialogFormVisible = true">Add Warehouse</el-button>
+     <el-dialog v-model="dialogFormVisible" title="Warehouse">
+        <el-form :model="form">
+          <el-form-item label="Warehouse Name" :label-width="formLabelWidth">
+            <el-input v-model="form.warehouseName" autocomplete="off" />
+          </el-form-item>
+          <el-form-item label="Warehouse Code" :label-width="formLabelWidth">
+            <el-input v-model="form.warehouseCode" autocomplete="off" />
+          </el-form-item>
+
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">  
+            <el-button @click="dialogFormVisible = false">Cancel</el-button>
+            <el-button type="primary" @click="addWarehouse">Confirm</el-button>
+          </span>
         </template>
-      </el-table-column>
-      
-      <el-table-column label="WarehouseCode" width="180">
-        <template #default="scope">
-          <el-popover effect="light" trigger="hover" placement="top" width="auto">
-            <template #default>
-              <div>name: {{ scope.row.name }}</div>
-              <div>address: {{ scope.row.address }}</div>
+      </el-dialog>
+        <el-table :data="tableData" style="width: 100%">
+          <el-table-column label="Warehouse Name" width="180" prop="warehouseName">
+
+          </el-table-column>
+          <el-table-column label="Warehouse Code" width="180" prop="warehouseCode">
+            
+          </el-table-column>
+          <el-table-column label="Actions">
+            <template #default="scope">
+              <el-button size="small" @click="editWarehouse(scope.row)">Edit</el-button>
+              <el-button size="small" type="danger" @click="deleteWarehouse(scope.row)">Delete</el-button>
             </template>
-            <template #reference>
-              <el-tag>{{ scope.row.name }}</el-tag>
-            </template>
-          </el-popover>
-        </template>
-      </el-table-column>
-      <el-table-column label="Actions">
-        <template #default="scope">
-          <el-button size="small" @click="handleEdit(scope.$index, scope.row)"
-            >Edit</el-button
-          >
-          <el-button
-            size="small"
-            type="danger"
-            @click="handleDelete(scope.$index, scope.row)"
-            >Delete</el-button
-          >
-        </template>
-      </el-table-column>
-    </el-table>
-    <el-dialog title="Add Warehouse" :visible.sync="showModal">
-        <!-- your form or input fields for adding a new warehouse here -->
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="showModal = false">Cancel</el-button>
-          <el-button type="primary" @click="addWarehouse">Add</el-button>
-        </span>
-    </el-dialog>
-</div>
+          </el-table-column>
+      </el-table>
 </template>
 
-<script lang="ts" >
-import { Timer } from '@element-plus/icons-vue'
+<script>
+import axios from 'axios'
+import Swal from 'sweetalert2'
 
-export default{
+
+export default {
   data() {
     return {
-      tableData: [],
-      showModal: false,
+      form: {
+        warehouseName: '',
+        warehouseCode: ''
+      },
+      dialogFormVisible: false,
+      tableData: []
     };
   },
   methods: {
     addWarehouse() {
-      this.showModal = false;
-    },
+      axios.post('https://localhost:7040/api/Warehouse', {
+        warehouseName: this.form.warehouseName,
+        warehouseCode: this.form.warehouseCode
+      })
+        .then(response => {
+          console.log(response.data)
+          this.dialogFormVisible = false;
+          this.loadTableData();
 
-    handleEdit(index, row) {
+          Swal.fire({
+            icon: 'sucess',
+            title: 'Warehouse Added Successfully',
+            showConfirmButton: false,
+            timer: 5000
+          })
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    loadTableData() {
+      axios.get('https://localhost:7040/api/Warehouse')
+        .then(response => {
+          this.tableData = response.data;
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    deleteWarehouse(row) {
+      Swal.fire({
+        title: 'Are you sure you want to delete this?',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      })
+      .then((result) => {
+        if(result.isConfirmed) {
+         /*  console.log(row);  ->>> Check for row if its exist*/ 
+          axios.delete(`https://localhost:7040/api/Warehouse/${row.warehouseId}`)
+            .then(response => {
+              console.log(response.data);
+              this.loadTableData();
+            })
+            .catch(error => {
+                console.log(error);
+            });
+            Swal.fire({
+              icon: 'success',
+              title: 'Warehouse has been deleted!'
+            }) 
+        }
+      })
+    },
+    editWarehouse(row) {
+      this.form.warehouseName = row.warehouseName;
+      this.form.warehouseCode = row.warehouseCode;
 
+      this.dialogFormVisible = true;  
     },
-    handleDelete(index, row) {
-      
+    updateWarehouse() {
+      axios.put(`https://localhost:7040/api/Warehouse/${this.selectedRow.warehouseId}`, {
+        warehouseName: this.form.warehouseName,
+        warehouseCode: this.form.warehouseCode
+      })
+      .then(response => {
+        console.log(response.data)
+        this.dialogFormVisible = false;
+        this.loadTableData();
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Warehouse updated successfully',
+          showConfirmButton: false,
+          timer: 5000
+        })
+        .catch(error => {
+            console.log(error);
+        });
+      })
     },
- },
+  },
+  created() {
+    this.loadTableData();
+  }
 }
 </script>
+<style scoped>
 
-<style>
-  .el-popover__popper {
-    z-index: 9999;
-  }
+.el-button--text {
+  margin-right: 15px;
+}
+.el-select {
+  width: 300px;
+}
+.el-input {
+  width: 300px;
+}
+.dialog-footer button:first-child {
+  margin-right: 10px;
+}
 </style>

@@ -1,9 +1,10 @@
 <script>
-import { RouterLink, RouterView } from 'vue-router';
+import { RouterLink } from 'vue-router';
 import User from './views/User.vue';
 import Address from './views/Address.vue';
 import Warehouse from './views/Warehouse.vue';
 import Role from './views/Role.vue';
+import { ref } from 'vue'
 
 export default {
   data() {
@@ -50,7 +51,6 @@ export default {
         <el-main class="main-table">
           <component :is="selectedView" class="child-table"></component>
         </el-main>
-        <Routerview/>
       </el-container>
     </el-container>
   </div>
