@@ -70,6 +70,11 @@ export default {
             showConfirmButton: false,
             timer: 1000
           })
+            this.form = {
+            roleId: null,
+            roleName: '',
+            roleCode: '',    
+          };
         })
         .catch(error => {
           console.log(error);
@@ -135,9 +140,9 @@ export default {
           timer: 1000
         });
         this.form = {
-          roleId: null,
-          roleName: '',
-          roleCode: ''
+            roleId: null,
+            roleName: '',
+            roleCode: '',    
         };
       })
       .catch(error => {

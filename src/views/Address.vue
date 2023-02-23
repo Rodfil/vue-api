@@ -97,6 +97,14 @@ export default {
             showConfirmButton: false,
             timer: 1000
           })
+            this.form = {
+            addressId: null,
+            street: '',
+            city: '',
+            state: '',
+            postalCode: '',
+            country: ''
+          };
         })
         .catch(error => {
           console.log(error);

@@ -70,6 +70,11 @@ export default {
             showConfirmButton: false,
             timer: 1000
           })
+            this.form = {
+              warehouseId: null,
+              warehouseName: '',
+              warehouseCode: '',    
+          };
         })
         .catch(error => {
           console.log(error);
@@ -135,9 +140,9 @@ export default {
           timer: 1000
         });
         this.form = {
-          warehouseId: null,
-          warehouseName: '',
-          warehouseCode: ''
+            warehouseId: null,
+            warehouseName: '',
+            warehouseCode: '',    
         };
       })
       .catch(error => {
