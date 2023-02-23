@@ -4,7 +4,7 @@ import User from './views/User.vue';
 import Address from './views/Address.vue';
 import Warehouse from './views/Warehouse.vue';
 import Role from './views/Role.vue';
-import { ref } from 'vue'
+
 
 export default {
   data() {
@@ -44,7 +44,7 @@ export default {
               <RouterLink class="routerlink" to="/user" @click="selectedMenu = 'User'">Users</RouterLink>
               <RouterLink class="routerlink" to="/address" @click="selectedMenu = 'Address'">Address</RouterLink>
               <RouterLink class="routerlink" to="/warehouse" @click="selectedMenu = 'Warehouse'">Warehouse</RouterLink>
-               <RouterLink class="routerlink" to="/role" @click="selectedMenu = 'Role'">Role</RouterLink>    
+              <RouterLink class="routerlink" to="/role" @click="selectedMenu = 'Role'">Role</RouterLink>    
             </div>        
           </nav>
         </el-aside>

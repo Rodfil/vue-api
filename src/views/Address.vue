@@ -1,130 +1,188 @@
 <template>
-    <div class="table-wrapper">
-        <el-table class="table-data" :data="tableData" style="width: 100%">
-            <el-table-column label="Date" width="180">
+  <!-- Form -->
+    <el-button type="success"  @click="dialogFormVisible = true">Add Address</el-button>
+     <el-dialog v-model="dialogFormVisible" title="Address">
+        <el-form :model="form">
+          <el-form-item label="Street" :label-width="formLabelWidth">
+            <el-input v-model="form.street" autocomplete="off" />
+          </el-form-item>
+          <el-form-item label="City" :label-width="formLabelWidth">
+            <el-input v-model="form.city" autocomplete="off" />
+          </el-form-item>
+          <el-form-item label="State" :label-width="formLabelWidth">
+            <el-input v-model="form.state" autocomplete="off" />
+          </el-form-item>
+          <el-form-item label="Postal Code" :label-width="formLabelWidth">
+            <el-input v-model="form.postalCode" autocomplete="off" />
+          </el-form-item>
+          <el-form-item label="Country" :label-width="formLabelWidth">
+            <el-input v-model="form.country" autocomplete="off" />
+          </el-form-item>
+
+        </el-form>
+        <template #footer>
+          <span class="dialog-footer">  
+            <el-button @click="dialogFormVisible = false">Cancel</el-button>
+            <el-button type="primary" @click="form.addressId ? updateWarehouse() : addWarehouse()">
+                {{ form.addressId ? 'Update' : 'Add' }}
+            </el-button>
+          </span>
+        </template>
+      </el-dialog>
+        <el-table :data="tableData" style="width: 100%">
+          <el-table-column label="Street" width="180" prop="street">
+
+          </el-table-column>
+          <el-table-column label="City" width="180" prop="city">
+            
+          </el-table-column>
+
+          <el-table-column label="State" width="180" prop="state">
+            
+          </el-table-column>
+
+          <el-table-column label="Postal Code" width="180" prop="postalCode">
+            
+          </el-table-column>
+          <el-table-column label="Country" width="180" prop="country">
+            
+          </el-table-column>
+
+          <el-table-column label="Actions">
             <template #default="scope">
-                <div style="display: flex; align-items: center">
-                <el-icon><timer /></el-icon>
-                <span style="margin-left: 10px">{{ scope.row.date }}</span>
-                </div>
+              <el-button size="small" @click="editWarehouse(scope.row)">Edit</el-button>
+              <el-button size="small" type="danger" @click="deleteWarehouse(scope.row)">Delete</el-button>
             </template>
-            </el-table-column>
-            <el-table-column label="Name" width="180">
-            <template #default="scope">
-                <el-popover effect="light" trigger="hover" placement="top" width="auto">
-                <template #default>
-                    <div>name: {{ scope.row.name }}</div>
-                    <div>address: {{ scope.row.address }}</div>
-                </template>
-                <template #reference>
-                    <el-tag>{{ scope.row.name }}</el-tag>
-                </template>
-                </el-popover>
-            </template>
-            </el-table-column>
-            <el-table-column label="Operations">
-            <template #default="scope">
-                <el-button size="small" @click="handleEdit(scope.$index, scope.row)"
-                >Edit</el-button
-                >
-                <el-button
-                size="small"
-                type="danger"
-                @click="handleDelete(scope.$index, scope.row)"
-                >Delete</el-button
-                >
-            </template>
-            </el-table-column>
-        </el-table>
-    </div>
+          </el-table-column>
+      </el-table>
 </template>
 
-<script lang="ts" setup>
-import { Timer } from '@element-plus/icons-vue'
+<script>
+import axios from 'axios'
+import Swal from 'sweetalert2'
 
-interface User {
-  date: string
-  name: string
-  address: string
+
+export default {
+  data() {
+    return {
+      form: {
+        addressId: null,  
+        street: '',
+        state: '',
+        city: '',
+        postalCode: '',
+        country: ''        
+      },
+      dialogFormVisible: false,
+      tableData: [],
+    };
+  },
+  methods: {
+    addWarehouse() {
+        axios.post('https://localhost:7040/api/Address', {
+        street: this.form.street,
+        state: this.form.state,
+        city: this.form.city,
+        postalCode: this.form.postalCode,
+        country: this.form.country
+      })
+        .then(response => {
+          console.log(response.data)
+          this.dialogFormVisible = false;
+          this.loadTableData();
+
+          Swal.fire({
+            icon: 'sucess',
+            title: 'Address Added Successfully',
+            showConfirmButton: false,
+            timer: 1000
+          })
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    loadTableData() {
+      axios.get('https://localhost:7040/api/Address')
+        .then(response => {
+          this.tableData = response.data;
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    deleteWarehouse(row) {
+      Swal.fire({
+        title: 'Are you sure you want to delete this?',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      })
+      .then((result) => {
+        if(result.isConfirmed) {
+         /*  console.log(row);  ->>> Check for row if its exist*/ 
+          axios.delete(`https://localhost:7040/api/Address/${row.addressId}`)
+            .then(response => {
+              console.log(response.data);
+              this.loadTableData();
+            })
+            .catch(error => {
+                console.log(error);
+            });
+            Swal.fire({
+              icon: 'success',
+              title: 'Address has been deleted!'
+            }) 
+        }
+      })
+    },
+    editWarehouse(row) {
+      this.form.addressId = row.addressId;
+      this.form.street = row.street;
+      this.form.state = row.state;
+      this.form.city = row.city;
+      this.form.postalCode = row.postalCode;
+      this.form.country = row.country;
+
+      this.dialogFormVisible = true;  
+    },
+    updateWarehouse() {
+      axios.put(`https://localhost:7040/api/Address/${this.form.addressId}`, {
+        street: this.form.street,
+        state: this.form.state,
+        city: this.form.city,
+        postalCode: this.form.postalCode,
+        country: this.form.country,
+        addressId: this.form.addressId
+      })
+      .then(response => {
+        console.log(response.data)
+        this.dialogFormVisible = false;
+        this.loadTableData();
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Address updated successfully',
+          showConfirmButton: false,
+          timer: 1000
+        });
+        this.form = {
+          addressId: null,
+          street: '',
+          city: '',
+          state: '',
+          postalCode: '',
+          country: ''
+        };
+      })
+      .catch(error => {
+            console.log(error);
+      });
+    },
+  },
+  created() {
+    this.loadTableData();
+  }
 }
-
-const handleEdit = (index: number, row: User) => {
-  console.log(index, row)
-}
-const handleDelete = (index: number, row: User) => {
-  console.log(index, row)
-}
-
-const tableData: User[] = [
-  {
-    date: '2016-05-03',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-02',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-04',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-01',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-]
-</script>
-
-<style>
-    .table-data .table-data{
-        background-color: red;
-    }
-
-    .table-wrapper {
-        background-color: red;
-    }
-
-    .el-table__body td {
-    padding: 10px;
-    border-bottom: 1px solid #ccc;
-    }
-
-    .el-table__header th {
-    font-size: 16px;
-    color: #333;
-    }
-
-    .el-table__body td:first-child {
-    background-color: #f0f0f0;
-    font-weight: bold;
-    }
-
-
-    .el-table__body td:nth-child(2) .el-tag {
-    background-color: #3399ff;
-    color: #fff;
-    font-size: 14px;
-    padding: 5px 10px;
-    }
-
-    .el-table__body td:nth-child(2) .el-popover {
-    z-index: 999;
-    max-width: 300px;
-    }
-
-    .el-table__body td:nth-child(2) .el-popover__title {
-    font-size: 14px;
-    color: #333;
-    margin-bottom: 10px;
-    }
-
-    .el-table__body td:nth-child(2) .el-popover__content {
-    font-size: 12px;
-    color: #666;
-    }
-
-</style>
+</script> 

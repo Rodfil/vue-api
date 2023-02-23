@@ -14,7 +14,9 @@
         <template #footer>
           <span class="dialog-footer">  
             <el-button @click="dialogFormVisible = false">Cancel</el-button>
-            <el-button type="primary" @click="addWarehouse">Confirm</el-button>
+            <el-button type="primary" @click="form.warehouseId ? updateWarehouse() : addWarehouse()">
+                {{ form.warehouseId ? 'Update' : 'Add' }}
+            </el-button>
           </span>
         </template>
       </el-dialog>
@@ -43,16 +45,17 @@ export default {
   data() {
     return {
       form: {
+        warehouseId: null,  
         warehouseName: '',
         warehouseCode: ''
       },
       dialogFormVisible: false,
-      tableData: []
+      tableData: [],
     };
   },
   methods: {
     addWarehouse() {
-      axios.post('https://localhost:7040/api/Warehouse', {
+        axios.post('https://localhost:7040/api/Warehouse', {
         warehouseName: this.form.warehouseName,
         warehouseCode: this.form.warehouseCode
       })
@@ -65,7 +68,7 @@ export default {
             icon: 'sucess',
             title: 'Warehouse Added Successfully',
             showConfirmButton: false,
-            timer: 5000
+            timer: 1000
           })
         })
         .catch(error => {
@@ -108,15 +111,17 @@ export default {
       })
     },
     editWarehouse(row) {
+      this.form.warehouseId = row.warehouseId;
       this.form.warehouseName = row.warehouseName;
       this.form.warehouseCode = row.warehouseCode;
 
       this.dialogFormVisible = true;  
     },
     updateWarehouse() {
-      axios.put(`https://localhost:7040/api/Warehouse/${this.selectedRow.warehouseId}`, {
+      axios.put(`https://localhost:7040/api/Warehouse/${this.form.warehouseId}`, {
         warehouseName: this.form.warehouseName,
-        warehouseCode: this.form.warehouseCode
+        warehouseCode: this.form.warehouseCode,
+        warehouseId: this.form.warehouseId
       })
       .then(response => {
         console.log(response.data)
@@ -127,12 +132,17 @@ export default {
           icon: 'success',
           title: 'Warehouse updated successfully',
           showConfirmButton: false,
-          timer: 5000
-        })
-        .catch(error => {
-            console.log(error);
+          timer: 1000
         });
+        this.form = {
+          warehouseId: null,
+          warehouseName: '',
+          warehouseCode: ''
+        };
       })
+      .catch(error => {
+            console.log(error);
+      });
     },
   },
   created() {
